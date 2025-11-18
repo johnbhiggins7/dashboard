@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 /// Theme mode management for dashboard.
 ///
@@ -25,12 +27,41 @@ import 'package:flutter/material.dart';
 /// - Defaults to system theme on first launch
 class ThemeProvider extends ChangeNotifier {
   ThemeMode _themeMode;
+  static const _prefsKey = 'app.theme_mode';
 
   ThemeProvider({
     ThemeMode themeMode = ThemeMode.system,
   }) : _themeMode = themeMode;
 
   ThemeMode get themeMode => _themeMode;
+
+  // Load persisted theme on startup
+  void restorePersistedTheme() {
+    // Fire and forget
+    _loadPersistedTheme();
+  }
+
+  Future<void> _loadPersistedTheme() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final value = prefs.getString(_prefsKey);
+      if (value == null) return;
+      switch (value) {
+        case 'light':
+          _themeMode = ThemeMode.light;
+          break;
+        case 'dark':
+          _themeMode = ThemeMode.dark;
+          break;
+        case 'system':
+        default:
+          _themeMode = ThemeMode.system;
+      }
+      notifyListeners();
+    } catch (e, st) {
+      debugPrint('ThemeProvider: Failed to load theme preference: $e\n$st');
+    }
+  }
 
   void toggleThemeMode() {
     switch (_themeMode) {
@@ -45,12 +76,28 @@ class ThemeProvider extends ChangeNotifier {
         break;
     }
     notifyListeners();
+    _persistTheme();
   }
 
   void setThemeMode(ThemeMode themeMode) {
     if (_themeMode != themeMode) {
       _themeMode = themeMode;
       notifyListeners();
+      _persistTheme();
+    }
+  }
+
+  Future<void> _persistTheme() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final value = switch (_themeMode) {
+        ThemeMode.light => 'light',
+        ThemeMode.dark => 'dark',
+        ThemeMode.system => 'system',
+      };
+      await prefs.setString(_prefsKey, value);
+    } catch (e, st) {
+      debugPrint('ThemeProvider: Failed to persist theme preference: $e\n$st');
     }
   }
 

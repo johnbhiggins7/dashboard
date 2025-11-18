@@ -27,7 +27,7 @@ import 'pages/dashboard_page.dart';
 void main() {
   runApp(
     ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+      create: (_) => ThemeProvider()..restorePersistedTheme(),
       child: const Application(),
     ),
   );

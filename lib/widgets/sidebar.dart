@@ -4,6 +4,7 @@ import '../theme/sidebar_style.dart' as sidebar_style;
 import 'package:dashboard/services/navigation_service.dart';
 import 'package:dashboard/services/user_service.dart';
 import 'patched_sidebar.dart';
+import 'package:dashboard/pages/settings_page.dart';
 
 /// Navigation sidebar with hierarchical menu structure.
 /// Applies custom sidebar styling via `sidebar_style.dart` on top of Forui base.
@@ -119,7 +120,32 @@ class Sidebar extends StatelessWidget {
                   icon: Icon(item.icon),
                   label: Text(item.title),
                   onPress: () {
-                    // TODO: Navigate to ${item.url}
+                    if (item.title == 'Settings') {
+                      Navigator.of(context).push(
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => const SettingsPage(),
+                          transitionsBuilder:
+                              (_, animation, __, child) => SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0.06, 0),
+                                  end: Offset.zero,
+                                ).animate(CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeOutCubic,
+                                )),
+                                child: FadeTransition(
+                                  opacity: CurvedAnimation(
+                                    parent: animation,
+                                    curve: Curves.easeOut,
+                                  ),
+                                  child: child,
+                                ),
+                              ),
+                        ),
+                      );
+                    } else {
+                      // TODO: Navigate to ${item.url}
+                    }
                   },
                 ),
               )
